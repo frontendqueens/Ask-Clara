@@ -49,7 +49,7 @@ Always apply `CLARA_DISCLAIMER` from `lib/demo-results.ts` on the way out.
 
 - Call Bedrock through Strands (`Agent` + `BedrockModel`), not a hand-rolled `InvokeModel` unless asked.
 - Create a new agent per request. Do not reuse conversation state across users.
-- Require `AWS_REGION`, `BEDROCK_MODEL_ID`, `AWS_ACCESS_KEY_ID`, and `AWS_SECRET_ACCESS_KEY`.
+- Require region, model ID, and access keys. Locally those are `AWS_*`. Amplify reserves the `AWS_` prefix, so use `CLARA_AWS_REGION`, `CLARA_AWS_ACCESS_KEY_ID`, and `CLARA_AWS_SECRET_ACCESS_KEY` there. `BEDROCK_MODEL_ID` is allowed on Amplify.
 - If any are missing, return the mock in `lib/demo-results.ts`.
 - If Bedrock fails, return `502`. Do not silently swap in the gift-card mock.
 - Newer Claude models need an inference profile ID (`us.anthropic.…` or `eu.anthropic.…`), not the bare foundation model ID.

@@ -18,12 +18,37 @@ Rules:
 - trustedPersonSummary should be written as if the person is asking a relative for help.
 - Always include this exact disclaimer: ${CLARA_DISCLAIMER}`;
 
+function envValue(...keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = process.env[key]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function bedrockConfig() {
+  return {
+    region: envValue("AWS_REGION", "CLARA_AWS_REGION"),
+    modelId: envValue("BEDROCK_MODEL_ID"),
+    accessKeyId: envValue("AWS_ACCESS_KEY_ID", "CLARA_AWS_ACCESS_KEY_ID"),
+    secretAccessKey: envValue(
+      "AWS_SECRET_ACCESS_KEY",
+      "CLARA_AWS_SECRET_ACCESS_KEY",
+    ),
+  };
+}
+
 export function isClaraBedrockConfigured(): boolean {
+  const config = bedrockConfig();
+
   return Boolean(
-    process.env.AWS_REGION?.trim() &&
-      process.env.BEDROCK_MODEL_ID?.trim() &&
-      process.env.AWS_ACCESS_KEY_ID?.trim() &&
-      process.env.AWS_SECRET_ACCESS_KEY?.trim(),
+    config.region &&
+      config.modelId &&
+      config.accessKeyId &&
+      config.secretAccessKey,
   );
 }
 
@@ -40,12 +65,25 @@ export async function analyzeWithClara(input: {
   type?: string;
   content: string;
 }): Promise<ClaraAnalysis> {
+  const { region, modelId, accessKeyId, secretAccessKey } = bedrockConfig();
+
+  if (!region || !modelId || !accessKeyId || !secretAccessKey) {
+    throw new Error("Bedrock is not configured.");
+  }
+
   const model = new BedrockModel({
-    modelId: process.env.BEDROCK_MODEL_ID,
-    region: process.env.AWS_REGION,
+    modelId,
+    region,
     temperature: 0.2,
     maxTokens: 1024,
     stream: false,
+    clientConfig: {
+      region,
+      credentials: {
+        accessKeyId,
+        secretAccessKey,
+      },
+    },
   });
 
   const agent = new Agent({
