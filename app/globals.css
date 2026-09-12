@@ -1,26 +1,1181 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Ask Clara — "Front Porch at Dusk"
+   Midnight = protection. Apricot = a warm porch light.
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --clara-midnight: #17233b;
+  --clara-midnight-deep: #101a2e;
+  --clara-blue-gray: #e5edf5;
+  --clara-paper: #fffdf8;
+  --clara-apricot: #f2b66d;
+  --clara-apricot-hover: #ffc77f;
+  --clara-apricot-pale: #ffdfb8;
+  --clara-teal: #156b5a;
+  --clara-teal-pale: #d8eee7;
+  --clara-cranberry: #a63d40;
+  --clara-cranberry-pale: #f7dddc;
+  --clara-caution: #9a6700;
+  --clara-caution-pale: #fff0c9;
+  --clara-ink: #162033;
+  --clara-muted: #536071;
+  --clara-line: #bdcad8;
+  --clara-shadow: 0 26px 70px rgba(6, 14, 31, 0.28);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--clara-midnight);
+  --color-foreground: var(--clara-ink);
+  --font-sans: var(--font-atkinson);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  /* "Larger text" scales the whole interface, so every size below is in rem. */
+  font-size: 100%;
+}
+
+html[data-clara-text="large"] {
+  font-size: 125%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  background-color: var(--clara-midnight);
+  color: var(--clara-ink);
+  font-family: var(--font-atkinson), Arial, Helvetica, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Fixed porch-light wash behind everything. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at 18% 18%,
+      rgba(242, 182, 109, 0.19),
+      transparent 26rem
+    ),
+    radial-gradient(
+      circle at 82% 45%,
+      rgba(116, 155, 195, 0.14),
+      transparent 30rem
+    );
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+p {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+:focus-visible {
+  outline: 4px solid var(--clara-apricot);
+  outline-offset: 4px;
+  /* Apricot alone sits at 1.8:1 on the paper panel, under the 3:1 minimum for
+     a focus indicator. The midnight ring fills the outline offset so focus is
+     unmistakable on light and dark surfaces alike. */
+  box-shadow: 0 0 0 4px var(--clara-midnight);
+}
+
+.clara-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.clara-eyebrow {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   Page frame
+   -------------------------------------------------------------------------- */
+
+.clara-page {
+  width: 100%;
+  max-width: 1380px;
+  margin: 0 auto;
+  padding-block: 1.75rem 3rem;
+  padding-inline: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Header
+   -------------------------------------------------------------------------- */
+
+.clara-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.clara-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.clara-mark {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--clara-apricot);
+  color: var(--clara-midnight);
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 0 0 6px rgba(242, 182, 109, 0.16);
+}
+
+.clara-identity__name {
+  font-size: 1.5rem;
+  color: var(--clara-paper);
+}
+
+.clara-identity__tagline {
+  font-size: 0.9375rem;
+  color: var(--clara-apricot-pale);
+}
+
+.clara-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.clara-nav__link,
+.clara-nav__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 2px solid rgba(229, 237, 245, 0.4);
+  border-radius: 10px;
+  background-color: transparent;
+  color: var(--clara-paper);
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.clara-nav__link:hover,
+.clara-nav__toggle:hover {
+  border-color: var(--clara-apricot);
+  color: var(--clara-apricot-hover);
+}
+
+.clara-nav__toggle[aria-pressed="true"] {
+  background-color: var(--clara-apricot);
+  border-color: var(--clara-apricot);
+  color: var(--clara-midnight);
+}
+
+.clara-nav__toggle-aa {
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   Split-panel shell
+   -------------------------------------------------------------------------- */
+
+.clara-shell {
+  display: grid;
+  grid-template-columns:
+    minmax(310px, 0.78fr)
+    minmax(580px, 1.45fr);
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: var(--clara-shadow);
+  border: 1px solid rgba(229, 237, 245, 0.16);
+}
+
+/* --------------------------------------------------------------------------
+   Welcome panel
+   -------------------------------------------------------------------------- */
+
+.clara-welcome {
+  background-color: var(--clara-midnight-deep);
+  color: var(--clara-blue-gray);
+  padding: 2.5rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.clara-welcome__eyebrow {
+  color: var(--clara-apricot);
+}
+
+.clara-welcome__title {
+  font-size: 2.125rem;
+  color: var(--clara-paper);
+}
+
+.clara-welcome__title span {
+  display: block;
+  color: var(--clara-apricot-pale);
+}
+
+.clara-welcome__body {
+  font-size: 1.125rem;
+  color: var(--clara-blue-gray);
+}
+
+.clara-promise {
+  border-left: 4px solid var(--clara-apricot);
+  background-color: rgba(242, 182, 109, 0.1);
+  border-radius: 0 12px 12px 0;
+  padding: 1.125rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clara-promise__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.0625rem;
+  color: var(--clara-apricot-pale);
+}
+
+.clara-promise__body {
+  font-size: 1rem;
+  color: var(--clara-blue-gray);
+}
+
+.clara-assurances {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.clara-assurances li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 1rem;
+}
+
+.clara-assurances__num {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex: none;
+  border-radius: 8px;
+  background-color: rgba(229, 237, 245, 0.12);
+  color: var(--clara-apricot);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------------
+   Checker panel
+   -------------------------------------------------------------------------- */
+
+.clara-checker {
+  background-color: var(--clara-paper);
+  padding: 2.5rem 2.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  min-width: 0;
+}
+
+.clara-checker__heading {
+  font-size: 1.625rem;
+  color: var(--clara-ink);
+}
+
+.clara-checker__hint {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: var(--clara-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Progress
+   -------------------------------------------------------------------------- */
+
+.clara-progress {
+  border-bottom: 1px solid var(--clara-line);
+  padding-bottom: 1.5rem;
+}
+
+.clara-progress__list {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.clara-progress__step {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex: none;
+}
+
+.clara-progress__step:not(:last-child) {
+  flex: 1 1 auto;
+}
+
+.clara-progress__dot {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid var(--clara-line);
+  background-color: transparent;
+  color: var(--clara-muted);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.clara-progress__label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--clara-muted);
+}
+
+.clara-progress__step[data-state="current"] .clara-progress__dot {
+  background-color: var(--clara-apricot);
+  border-color: var(--clara-midnight);
+  color: var(--clara-midnight);
+}
+
+.clara-progress__step[data-state="current"] .clara-progress__label {
+  color: var(--clara-ink);
+}
+
+.clara-progress__step[data-state="complete"] .clara-progress__dot {
+  background-color: var(--clara-teal);
+  border-color: var(--clara-teal);
+  color: #ffffff;
+}
+
+.clara-progress__step[data-state="complete"] .clara-progress__label {
+  color: var(--clara-teal);
+}
+
+.clara-progress__line {
+  flex: 1 1 auto;
+  min-width: 1rem;
+  height: 2px;
+  background-color: var(--clara-line);
+}
+
+.clara-progress__line[data-state="complete"] {
+  background-color: var(--clara-teal);
+}
+
+/* --------------------------------------------------------------------------
+   Input choices
+   -------------------------------------------------------------------------- */
+
+.clara-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.clara-legend {
+  padding: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--clara-ink);
+}
+
+.clara-choices {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.clara-choice {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.625rem;
+  min-height: 44px;
+  padding: 1rem;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background-color: var(--clara-blue-gray);
+  color: var(--clara-ink);
+  cursor: pointer;
+}
+
+.clara-choice:hover {
+  border-color: var(--clara-apricot);
+}
+
+.clara-choice__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.clara-choice:has(.clara-choice__input:focus-visible) {
+  outline: 4px solid var(--clara-apricot);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px var(--clara-midnight);
+}
+
+.clara-choice:has(.clara-choice__input:checked) {
+  background-color: var(--clara-midnight);
+  border-color: var(--clara-midnight);
+  color: var(--clara-paper);
+}
+
+.clara-choice__icon {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  background-color: rgba(22, 32, 51, 0.08);
+  color: var(--clara-midnight);
+}
+
+.clara-choice:has(.clara-choice__input:checked) .clara-choice__icon {
+  background-color: var(--clara-apricot);
+  color: var(--clara-midnight);
+}
+
+.clara-choice__label {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.clara-choice__check {
+  font-size: 0.875rem;
+  color: var(--clara-muted);
+}
+
+.clara-choice:has(.clara-choice__input:checked) .clara-choice__check {
+  color: var(--clara-apricot-pale);
+}
+
+/* --------------------------------------------------------------------------
+   Text + file inputs
+   -------------------------------------------------------------------------- */
+
+.clara-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.clara-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.clara-label {
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--clara-ink);
+}
+
+.clara-help {
+  font-size: 0.9375rem;
+  color: var(--clara-muted);
+}
+
+.clara-textarea {
+  width: 100%;
+  min-height: 10rem;
+  padding: 0.875rem 1rem;
+  border: 2px solid var(--clara-line);
+  border-radius: 12px;
+  background-color: #ffffff;
+  color: var(--clara-ink);
+  font-family: inherit;
+  font-size: 1.125rem;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.clara-textarea::placeholder {
+  color: var(--clara-muted);
+}
+
+.clara-textarea:hover {
+  border-color: var(--clara-muted);
+}
+
+.clara-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--clara-line);
+  border-radius: 12px;
+  background-color: var(--clara-blue-gray);
+}
+
+.clara-file {
+  font-family: inherit;
+  font-size: 1rem;
+  color: var(--clara-ink);
+  min-height: 44px;
+}
+
+.clara-file::file-selector-button {
+  min-height: 44px;
+  margin-right: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--clara-midnight);
+  border-radius: 9px;
+  background-color: #ffffff;
+  color: var(--clara-midnight);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.clara-file-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clara-teal);
+}
+
+/* --------------------------------------------------------------------------
+   Buttons
+   -------------------------------------------------------------------------- */
+
+.clara-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 52px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9px;
+  border: 2px solid var(--clara-midnight);
+  font-family: inherit;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.clara-btn--primary {
+  background-color: var(--clara-apricot);
+  color: var(--clara-midnight);
+}
+
+.clara-btn--primary:hover:not(:disabled) {
+  background-color: var(--clara-apricot-hover);
+}
+
+.clara-btn--secondary {
+  background-color: #ffffff;
+  color: var(--clara-midnight);
+}
+
+.clara-btn--secondary:hover:not(:disabled) {
+  background-color: var(--clara-blue-gray);
+}
+
+.clara-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.clara-btn__arrow {
+  transition: transform 150ms ease;
+}
+
+.clara-btn:hover:not(:disabled) .clara-btn__arrow {
+  transform: translateX(5px);
+}
+
+.clara-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* --------------------------------------------------------------------------
+   Error
+   -------------------------------------------------------------------------- */
+
+.clara-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem 1.125rem;
+  border: 2px solid var(--clara-cranberry);
+  border-radius: 12px;
+  background-color: var(--clara-cranberry-pale);
+  color: var(--clara-ink);
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.clara-error svg {
+  flex: none;
+  color: var(--clara-cranberry);
+}
+
+/* --------------------------------------------------------------------------
+   Checking state
+   -------------------------------------------------------------------------- */
+
+.clara-checking {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 2.5rem 1.5rem;
+  border: 1px solid var(--clara-line);
+  border-radius: 16px;
+  background-color: var(--clara-blue-gray);
+  text-align: center;
+}
+
+.clara-checking__mark {
+  display: grid;
+  place-items: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  background-color: var(--clara-apricot);
+  color: var(--clara-midnight);
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1;
+  animation: clara-porch-glow 2.4s ease-in-out infinite;
+}
+
+@keyframes clara-porch-glow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0.5rem rgba(242, 182, 109, 0.18);
+  }
+  50% {
+    box-shadow: 0 0 0 1.25rem rgba(242, 182, 109, 0.05);
+  }
+}
+
+.clara-checking__title {
+  font-size: 1.5rem;
+  color: var(--clara-ink);
+}
+
+.clara-checking__list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  text-align: left;
+}
+
+.clara-checking__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.0625rem;
+  color: var(--clara-muted);
+}
+
+.clara-checking__pip {
+  width: 0.625rem;
+  height: 0.625rem;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--clara-apricot);
+  animation: clara-pip 1.6s ease-in-out infinite;
+}
+
+.clara-checking__list li:nth-child(2) .clara-checking__pip {
+  animation-delay: 0.25s;
+}
+
+.clara-checking__list li:nth-child(3) .clara-checking__pip {
+  animation-delay: 0.5s;
+}
+
+@keyframes clara-pip {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Result
+   -------------------------------------------------------------------------- */
+
+.clara-result {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.clara-verdict {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid var(--clara-line);
+  border-radius: 16px;
+  background-color: var(--clara-blue-gray);
+}
+
+.clara-verdict__icon {
+  flex: none;
+  margin-top: 0.125rem;
+}
+
+.clara-verdict__eyebrow {
+  margin-bottom: 0.375rem;
+}
+
+.clara-verdict__headline {
+  font-size: 1.625rem;
+  color: var(--clara-ink);
+}
+
+.clara-verdict__summary {
+  margin-top: 0.625rem;
+  font-size: 1.0625rem;
+  color: var(--clara-ink);
+}
+
+.clara-result[data-risk="likely_scam"] .clara-verdict {
+  border-color: var(--clara-cranberry);
+  background-color: var(--clara-cranberry-pale);
+}
+
+.clara-result[data-risk="likely_scam"] .clara-verdict__icon,
+.clara-result[data-risk="likely_scam"] .clara-verdict__eyebrow {
+  color: var(--clara-cranberry);
+}
+
+.clara-result[data-risk="caution"] .clara-verdict {
+  border-color: var(--clara-caution);
+  background-color: var(--clara-caution-pale);
+}
+
+.clara-result[data-risk="caution"] .clara-verdict__icon {
+  color: var(--clara-caution);
+}
+
+.clara-result[data-risk="caution"] .clara-verdict__eyebrow {
+  color: var(--clara-ink);
+}
+
+.clara-result[data-risk="low_concern"] .clara-verdict {
+  border-color: var(--clara-teal);
+  background-color: var(--clara-teal-pale);
+}
+
+.clara-result[data-risk="low_concern"] .clara-verdict__icon,
+.clara-result[data-risk="low_concern"] .clara-verdict__eyebrow {
+  color: var(--clara-teal);
+}
+
+.clara-result[data-risk="unclear"] .clara-verdict__icon,
+.clara-result[data-risk="unclear"] .clara-verdict__eyebrow {
+  color: var(--clara-midnight);
+}
+
+.clara-block__title {
+  font-size: 1.25rem;
+  color: var(--clara-ink);
+  margin-bottom: 0.75rem;
+}
+
+.clara-signs {
+  list-style: none;
+  counter-reset: clara-sign;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.clara-signs li {
+  counter-increment: clara-sign;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  font-size: 1.0625rem;
+  color: var(--clara-ink);
+}
+
+.clara-signs li::before {
+  content: counter(clara-sign);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  border-radius: 8px;
+  background-color: var(--clara-midnight);
+  color: #ffffff;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+/* Cranberry stays reserved for the likely-scam verdict. */
+.clara-result[data-risk="likely_scam"] .clara-signs li::before {
+  background-color: var(--clara-cranberry);
+}
+
+.clara-safest {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  border: 2px solid var(--clara-teal);
+  border-radius: 16px;
+  background-color: var(--clara-teal-pale);
+}
+
+.clara-safest__icon {
+  flex: none;
+  margin-top: 0.125rem;
+  color: var(--clara-teal);
+}
+
+.clara-safest__eyebrow {
+  color: var(--clara-teal);
+  margin-bottom: 0.375rem;
+}
+
+.clara-safest__body {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--clara-ink);
+}
+
+.clara-disclaimer {
+  font-size: 0.9375rem;
+  color: var(--clara-muted);
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--clara-line);
+}
+
+/* --------------------------------------------------------------------------
+   Trusted-person dialog
+   -------------------------------------------------------------------------- */
+
+.clara-dialog {
+  /* Tailwind's preflight zeroes the margin that natively centres a dialog. */
+  margin: auto;
+  width: min(34rem, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  padding: 0;
+  border: 2px solid var(--clara-midnight);
+  border-radius: 18px;
+  background-color: var(--clara-paper);
+  color: var(--clara-ink);
+  box-shadow: var(--clara-shadow);
+}
+
+.clara-dialog::backdrop {
+  background-color: rgba(16, 26, 46, 0.72);
+}
+
+.clara-dialog__inner {
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.clara-dialog__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.clara-dialog__eyebrow {
+  color: var(--clara-muted);
+  margin-bottom: 0.375rem;
+}
+
+.clara-dialog__title {
+  font-size: 1.5rem;
+}
+
+.clara-dialog__close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex: none;
+  border: 2px solid var(--clara-midnight);
+  border-radius: 9px;
+  background-color: #ffffff;
+  color: var(--clara-midnight);
+  cursor: pointer;
+}
+
+.clara-dialog__close:hover {
+  background-color: var(--clara-blue-gray);
+}
+
+.clara-preview {
+  padding: 1rem 1.125rem;
+  border-left: 4px solid var(--clara-apricot);
+  border-radius: 0 12px 12px 0;
+  background-color: var(--clara-blue-gray);
+  font-size: 1.0625rem;
+  color: var(--clara-ink);
+}
+
+.clara-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.625rem 1rem;
+  border: 2px solid var(--clara-line);
+  border-radius: 12px;
+  background-color: #ffffff;
+  color: var(--clara-ink);
+  font-family: inherit;
+  font-size: 1.125rem;
+}
+
+.clara-dialog__status {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--clara-teal);
+}
+
+.clara-dialog__note {
+  font-size: 0.9375rem;
+  color: var(--clara-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Supporting section
+   -------------------------------------------------------------------------- */
+
+.clara-support {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.clara-support__heading {
+  grid-column: 1 / -1;
+  font-size: 1.375rem;
+  color: var(--clara-paper);
+}
+
+.clara-support__card {
+  padding: 1.5rem;
+  border: 1px solid rgba(229, 237, 245, 0.18);
+  border-radius: 14px;
+  background-color: rgba(16, 26, 46, 0.58);
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.clara-support__step {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--clara-apricot);
+}
+
+.clara-support__title {
+  font-size: 1.125rem;
+  color: var(--clara-paper);
+}
+
+.clara-support__body {
+  font-size: 1rem;
+  color: var(--clara-blue-gray);
+}
+
+.clara-footer {
+  font-size: 0.9375rem;
+  color: var(--clara-blue-gray);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   Responsive
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 61.25em) {
+  .clara-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clara-choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clara-support {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .clara-welcome,
+  .clara-checker {
+    padding: 2rem 1.75rem;
+  }
+
+}
+
+@media (max-width: 42.5em) {
+  .clara-page {
+    padding-inline: 1rem;
+    padding-block: 1.25rem 2rem;
+  }
+
+  .clara-nav__link {
+    display: none;
+  }
+
+  .clara-welcome,
+  .clara-checker {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .clara-welcome__title {
+    font-size: 1.75rem;
+  }
+
+  .clara-progress__label {
+    display: none;
+  }
+
+  .clara-progress__step {
+    flex: none;
+  }
+
+  .clara-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .clara-actions .clara-btn {
+    width: 100%;
+  }
+
+  .clara-verdict,
+  .clara-safest,
+  .clara-checking {
+    padding: 1.25rem;
+  }
+
+  .clara-verdict,
+  .clara-safest {
+    flex-direction: column;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .clara-checking__mark {
+    animation: none;
+    box-shadow: 0 0 0 0.75rem rgba(242, 182, 109, 0.16);
+  }
+
+  .clara-checking__pip {
+    animation: none;
+    opacity: 1;
+  }
+
+  .clara-btn:hover:not(:disabled) .clara-btn__arrow {
+    transform: none;
+  }
 }

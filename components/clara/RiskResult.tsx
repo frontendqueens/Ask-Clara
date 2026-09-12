@@ -1,4 +1,15 @@
-import { TriangleAlert } from "lucide-react";
+"use client";
+
+import { useEffect, useRef } from "react";
+import {
+  ArrowRight,
+  CircleAlert,
+  Info,
+  Phone,
+  ShieldCheck,
+  TriangleAlert,
+  Users,
+} from "lucide-react";
 import type { ClaraAnalysis, ClaraRisk } from "@/types/analysis";
 
 const RISK_LABELS: Record<ClaraRisk, string> = {
@@ -6,6 +17,24 @@ const RISK_LABELS: Record<ClaraRisk, string> = {
   caution: "Caution",
   likely_scam: "Likely scam",
   unclear: "Unclear",
+};
+
+/**
+ * Every verdict states its meaning in words as well as colour, so the result
+ * never depends on the palette alone.
+ */
+const RISK_EYEBROWS: Record<ClaraRisk, string> = {
+  low_concern: "No clear warning signs",
+  caution: "Caution — take your time",
+  likely_scam: "Stop — likely a scam",
+  unclear: "Not enough to be sure",
+};
+
+const RISK_ICONS: Record<ClaraRisk, typeof TriangleAlert> = {
+  low_concern: ShieldCheck,
+  caution: CircleAlert,
+  likely_scam: TriangleAlert,
+  unclear: Info,
 };
 
 type RiskResultProps = {
@@ -19,44 +48,90 @@ export function RiskResult({
   onStartOver,
   onAskTrustedPerson,
 }: RiskResultProps) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const RiskIcon = RISK_ICONS[analysis.risk];
+
+  // Move focus to the verdict so screen reader and keyboard users land on the
+  // answer instead of having to hunt for it.
+  useEffect(() => {
+    headingRef.current?.focus();
+  }, []);
+
   return (
-    <section aria-live="polite" className="space-y-4">
-      <h2 className="text-2xl font-semibold">Clara&apos;s second opinion</h2>
-      <p className="flex items-start gap-2 font-semibold">
-        <TriangleAlert aria-hidden="true" className="mt-1 size-6 shrink-0" />
-        <span>Risk level: {RISK_LABELS[analysis.risk]}</span>
-      </p>
-      <h3 className="text-xl font-semibold">{analysis.headline}</h3>
-      <p>{analysis.summary}</p>
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold">Warning signs</h3>
-        <ul className="list-disc space-y-1 pl-6">
+    <section
+      aria-live="polite"
+      className="clara-result"
+      data-risk={analysis.risk}
+      aria-labelledby="result-headline"
+    >
+      <div className="clara-verdict">
+        <RiskIcon
+          aria-hidden="true"
+          size={32}
+          className="clara-verdict__icon"
+        />
+        <div>
+          <p className="clara-eyebrow clara-verdict__eyebrow">
+            {RISK_EYEBROWS[analysis.risk]}
+          </p>
+          <h2
+            id="result-headline"
+            ref={headingRef}
+            tabIndex={-1}
+            className="clara-verdict__headline"
+          >
+            {analysis.headline}
+          </h2>
+          <p className="clara-sr-only">
+            Risk level: {RISK_LABELS[analysis.risk]}.
+          </p>
+          <p className="clara-verdict__summary">{analysis.summary}</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="clara-block__title">Warning signs</h3>
+        <ol className="clara-signs">
           {analysis.warningSigns.map((sign) => (
             <li key={sign}>{sign}</li>
           ))}
-        </ul>
+        </ol>
       </div>
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold">Safest next step</h3>
-        <p>{analysis.safestNextStep}</p>
+
+      <div className="clara-safest">
+        <Phone aria-hidden="true" size={28} className="clara-safest__icon" />
+        <div>
+          <p className="clara-eyebrow clara-safest__eyebrow">
+            Your safest next step
+          </p>
+          <p className="clara-safest__body">{analysis.safestNextStep}</p>
+        </div>
       </div>
-      <p>{analysis.disclaimer}</p>
-      <div className="flex flex-col gap-3 sm:flex-row">
+
+      <div className="clara-actions">
         <button
           type="button"
           onClick={onAskTrustedPerson}
-          className="rounded border border-zinc-800 px-4 py-3"
+          className="clara-btn clara-btn--primary"
         >
-          Ask a trusted person
+          <Users aria-hidden="true" size={20} />
+          Ask someone trusted
+          <ArrowRight
+            aria-hidden="true"
+            size={20}
+            className="clara-btn__arrow"
+          />
         </button>
         <button
           type="button"
           onClick={onStartOver}
-          className="rounded border border-zinc-800 px-4 py-3"
+          className="clara-btn clara-btn--secondary"
         >
           Start over
         </button>
       </div>
+
+      <p className="clara-disclaimer">{analysis.disclaimer}</p>
     </section>
   );
 }

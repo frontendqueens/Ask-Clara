@@ -1,22 +1,30 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { ArrowRight, TriangleAlert } from "lucide-react";
 import { claraAnalysisSchema } from "@/lib/analysis-schema";
 import type { ClaraAnalysis } from "@/types/analysis";
 import { CheckingState } from "./CheckingState";
 import { InputChoices, type InputChoice } from "./InputChoices";
 import { MessageInput } from "./MessageInput";
+import { ProgressSteps, type ClaraStep } from "./ProgressSteps";
 import { RiskResult } from "./RiskResult";
 import { ScreenshotInput } from "./ScreenshotInput";
-import { TextSizeControl, type TextSize } from "./TextSizeControl";
 import { TrustedPersonDialog } from "./TrustedPersonDialog";
 
 type View = "form" | "checking" | "result";
 
-const TEXT_SIZE_CLASS: Record<TextSize, string> = {
-  small: "text-base",
-  medium: "text-lg",
-  large: "text-2xl",
+const STEP_FOR_VIEW: Record<View, ClaraStep> = {
+  form: "show",
+  checking: "check",
+  result: "decide",
+};
+
+const TELL_COPY = {
+  label: "What happened?",
+  help: "Tell Clara in your own words. There is no wrong way to say it.",
+  placeholder:
+    "Someone called about my account and asked me to buy gift cards.",
 };
 
 export function ClaraChecker() {
@@ -26,15 +34,14 @@ export function ClaraChecker() {
   const [view, setView] = useState<View>("form");
   const [analysis, setAnalysis] = useState<ClaraAnalysis | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [textSize, setTextSize] = useState<TextSize>("medium");
   const [trustedOpen, setTrustedOpen] = useState(false);
 
   const content =
-    inputType === "message"
-      ? message
-      : screenshot
+    inputType === "screenshot"
+      ? screenshot
         ? `Screenshot uploaded: ${screenshot.name}`
-        : "";
+        : ""
+      : message;
 
   const canSubmit = content.trim().length > 0;
 
@@ -42,7 +49,11 @@ export function ClaraChecker() {
     event.preventDefault();
 
     if (!canSubmit) {
-      setError("Please enter a message or upload a screenshot first.");
+      setError(
+        inputType === "screenshot"
+          ? "Please add a screenshot first."
+          : "Please add the message first.",
+      );
       return;
     }
 
@@ -93,14 +104,17 @@ export function ClaraChecker() {
     setAnalysis(null);
     setError(null);
     setTrustedOpen(false);
+    setMessage("");
+    setScreenshot(null);
   }
 
   return (
-    <div className={`space-y-6 ${TEXT_SIZE_CLASS[textSize]}`}>
-      <TextSizeControl value={textSize} onChange={setTextSize} />
+    <div className="clara-checker">
+      <ProgressSteps current={STEP_FOR_VIEW[view]} />
 
       {error ? (
-        <p role="alert" aria-live="assertive">
+        <p role="alert" aria-live="assertive" className="clara-error">
+          <TriangleAlert aria-hidden="true" size={22} />
           {error}
         </p>
       ) : null}
@@ -116,23 +130,47 @@ export function ClaraChecker() {
       ) : null}
 
       {view === "form" ? (
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <h2 className="text-2xl font-semibold">
-            What would you like Clara to check?
-          </h2>
+        <form onSubmit={handleSubmit} className="clara-form">
+          <div>
+            <h2 className="clara-checker__heading">
+              What would you like Clara to check?
+            </h2>
+            <p className="clara-checker__hint">
+              Take your time. Nothing is sent anywhere until you press the
+              button.
+            </p>
+          </div>
+
           <InputChoices value={inputType} onChange={setInputType} />
-          {inputType === "message" ? (
-            <MessageInput value={message} onChange={setMessage} />
-          ) : (
+
+          {inputType === "screenshot" ? (
             <ScreenshotInput file={screenshot} onChange={setScreenshot} />
+          ) : inputType === "tell" ? (
+            <MessageInput
+              value={message}
+              onChange={setMessage}
+              label={TELL_COPY.label}
+              help={TELL_COPY.help}
+              placeholder={TELL_COPY.placeholder}
+            />
+          ) : (
+            <MessageInput value={message} onChange={setMessage} />
           )}
-          <button
-            type="submit"
-            disabled={!canSubmit}
-            className="rounded border border-zinc-800 px-4 py-3 disabled:opacity-50"
-          >
-            Check it with Clara
-          </button>
+
+          <div className="clara-actions">
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              className="clara-btn clara-btn--primary"
+            >
+              Check it with Clara
+              <ArrowRight
+                aria-hidden="true"
+                size={20}
+                className="clara-btn__arrow"
+              />
+            </button>
+          </div>
         </form>
       ) : null}
 

@@ -5,31 +5,25 @@ type TextSizeControlProps = {
   onChange: (value: TextSize) => void;
 };
 
-const OPTIONS: { value: TextSize; label: string }[] = [
-  { value: "small", label: "Small" },
-  { value: "medium", label: "Medium" },
-  { value: "large", label: "Large" },
-];
-
+/**
+ * The "Aa Larger text" porch-light control. It is a two-state toggle so the
+ * reading size is one predictable press away, and it reports state with
+ * aria-pressed rather than relying on the highlight colour alone.
+ */
 export function TextSizeControl({ value, onChange }: TextSizeControlProps) {
+  const enlarged = value === "large";
+
   return (
-    <fieldset className="space-y-2">
-      <legend className="font-semibold">Text size</legend>
-      <div className="flex flex-wrap gap-4">
-        {OPTIONS.map((option) => (
-          <div key={option.value} className="flex items-center gap-2">
-            <input
-              type="radio"
-              id={`text-size-${option.value}`}
-              name="text-size"
-              value={option.value}
-              checked={value === option.value}
-              onChange={() => onChange(option.value)}
-            />
-            <label htmlFor={`text-size-${option.value}`}>{option.label}</label>
-          </div>
-        ))}
-      </div>
-    </fieldset>
+    <button
+      type="button"
+      className="clara-nav__toggle"
+      aria-pressed={enlarged}
+      onClick={() => onChange(enlarged ? "medium" : "large")}
+    >
+      <span aria-hidden="true" className="clara-nav__toggle-aa">
+        Aa
+      </span>
+      Larger text
+    </button>
   );
 }
