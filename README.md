@@ -138,18 +138,9 @@ All four values must be non-empty for Clara to call Bedrock. If any are missing,
 
 ## How analysis works
 
-```mermaid
-flowchart TD
-    A["Browser: ClaraChecker"] -->|"POST /api/analyze"| B["route.ts"]
-    B -->|"invalid body"| E4["400 content required"]
-    B --> C{"Bedrock configured?"}
-    C -->|"no"| M["Mock result + 1s delay"]
-    C -->|"yes"| S["Strands Agent + BedrockModel"]
-    S --> R["Amazon Bedrock"]
-    R -->|"valid ClaraAnalysis"| OK["200 ClaraAnalysis"]
-    R -->|"throws"| E5["502 error and detail"]
-    M --> OK
-```
+
+<img width="1060" height="988" alt="Screenshot 2026-09-12 at 12 25 57 PM" src="https://github.com/user-attachments/assets/ba3c85f4-eef3-4895-9ee1-1d51ba3fce05" />
+
 
 1. The UI posts `{ type, content }` to `POST /api/analyze`.
 2. The route validates `content` with Zod. Invalid input returns `400`.
