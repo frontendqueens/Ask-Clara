@@ -23,8 +23,13 @@ export async function POST(request: Request) {
   const parsedRequest = analyzeRequestSchema.safeParse(body);
 
   if (!parsedRequest.success) {
+    const firstIssue = parsedRequest.error.issues[0]?.message;
     return NextResponse.json(
-      { error: "content is required and must be a non-empty string." },
+      {
+        error:
+          firstIssue ??
+          "content is required. Screenshots must include an image.",
+      },
       { status: 400 },
     );
   }

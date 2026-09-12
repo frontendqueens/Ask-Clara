@@ -76,4 +76,4 @@ Always apply `CLARA_DISCLAIMER` from `lib/demo-results.ts` on the way out.
 
 ## Screenshots
 
-`ScreenshotInput` currently sends `Screenshot uploaded: filename`. Do not treat that as real image analysis unless you add multimodal Bedrock input.
+Screenshot checks send `{ type: "screenshot", content, image: { mediaType, data } }`. Decode the base64 in `lib/clara-agent.ts` and pass an `ImageBlock` to Strands. Do not log image bytes. Do not treat a filename-only payload as a real screenshot.

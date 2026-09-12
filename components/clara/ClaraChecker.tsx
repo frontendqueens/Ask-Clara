@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react";
 import { ArrowRight, TriangleAlert } from "lucide-react";
 import { claraAnalysisSchema } from "@/lib/analysis-schema";
+import { fileToScreenshotImage } from "@/lib/screenshot";
 import type { ClaraAnalysis } from "@/types/analysis";
 import { CheckingState } from "./CheckingState";
 import { InputChoices, type InputChoice } from "./InputChoices";
@@ -61,10 +62,19 @@ export function ClaraChecker() {
     setView("checking");
 
     try {
+      const image =
+        inputType === "screenshot" && screenshot
+          ? await fileToScreenshotImage(screenshot)
+          : undefined;
+
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: inputType, content }),
+        body: JSON.stringify({
+          type: inputType,
+          content,
+          ...(image ? { image } : {}),
+        }),
       });
 
       const data: unknown = await response.json();

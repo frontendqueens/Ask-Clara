@@ -42,7 +42,25 @@ export const claraAnalysisSchema = z.object({
     .describe("A brief reminder that Clara is only a second opinion."),
 });
 
-export const analyzeRequestSchema = z.object({
-  type: z.string().optional(),
-  content: z.string().trim().min(1),
+export const screenshotImageSchema = z.object({
+  mediaType: z.enum(["image/jpeg", "image/png", "image/webp", "image/gif"]),
+  data: z.string().min(1),
 });
+
+export const analyzeRequestSchema = z
+  .object({
+    type: z.enum(["message", "screenshot", "tell"]).optional(),
+    content: z.string().trim().min(1),
+    image: screenshotImageSchema.optional(),
+  })
+  .superRefine((value, context) => {
+    if (value.type === "screenshot" && !value.image) {
+      context.addIssue({
+        code: "custom",
+        message: "A screenshot image is required.",
+        path: ["image"],
+      });
+    }
+  });
+
+export type AnalyzeRequest = z.infer<typeof analyzeRequestSchema>;

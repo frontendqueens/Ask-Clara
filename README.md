@@ -23,7 +23,7 @@ A short summary to share with someone they trust
 - Shared `ClaraAnalysis` type and Zod schema
 - Temporary mock result when AWS is not configured
 - Live analysis through [Strands Agents](https://strandsagents.com/docs/user-guide/quickstart/typescript/) and Amazon Bedrock when `.env.local` is set
-- Screenshot upload still sends a filename description, not image bytes
+- Screenshot upload sends the image to Bedrock (JPEG, PNG, WebP, or GIF, under 3.5 MB)
 
 ## Technology stack
 
@@ -138,8 +138,8 @@ All four values must be non-empty for Clara to call Bedrock. If any are missing,
 
 ## How analysis works
 
-1. The UI posts `{ type, content }` to `POST /api/analyze`.
-2. The route validates `content` with Zod. Invalid input returns `400`.
+1. The UI posts `{ type, content }` to `POST /api/analyze`. Screenshots also send `{ image: { mediaType, data } }`.
+2. The route validates the request with Zod. Invalid input returns `400`. Screenshots require image bytes, not only a filename.
 3. If AWS is configured, `lib/clara-agent.ts` creates a Strands `Agent` with `BedrockModel` and `claraAnalysisSchema`.
 4. The model must return `ClaraAnalysis`: `risk`, `headline`, `summary`, `warningSigns` (1–3 items), `safestNextStep`, `trustedPersonSummary`, and `disclaimer`.
 5. Allowed `risk` values: `low_concern`, `caution`, `likely_scam`, `unclear`.
@@ -170,6 +170,5 @@ Clara provides a second opinion. It does not guarantee that a message is safe, m
 
 ## Later work
 
-- Screenshot analysis with real image bytes (multimodal Bedrock input)
 - Prompt tuning after more demo examples
 - Optional Amazon Bedrock AgentCore hosting (not required for the local demo)

@@ -12,7 +12,7 @@ export function ScreenshotInput({ file, onChange }: ScreenshotInputProps) {
         Screenshot of the message
       </label>
       <p id="suspicious-screenshot-help" className="clara-help">
-        A photo or screenshot of the message works well.
+        Clara will look at the picture. Use a JPEG, PNG, WebP, or GIF under 3.5 MB.
       </p>
       <div className="clara-dropzone">
         <input

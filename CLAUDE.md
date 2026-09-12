@@ -22,6 +22,7 @@ This is Next.js 16. Read the matching guide under `node_modules/next/dist/docs/`
 - Do not call Bedrock with a bare model ID when the model requires an inference profile.
 - Do not fall back to the gift-card demo after a Bedrock error.
 - Do not add AgentCore, auth, or a database unless the user asks.
+- Screenshot analysis must send image bytes, not only a filename.
 
 ## Quick checks
 
