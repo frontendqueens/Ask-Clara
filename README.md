@@ -57,29 +57,30 @@ These placeholders live in `.env.example`. They are not used by the current mock
 | --- | --- |
 | `AWS_REGION` | AWS region for the future Bedrock request |
 | `AWS_ACCESS_KEY_ID` | Access key for the future Bedrock request |
-| `AWS_SECRET_ACCESS_KEY` | Secret key for the future Bedrock request |
-| `BEDROCK_MODEL_ID` | Bedrock model identifier |
+| `AWS_SECRET_ACCESS_KEY` | Secret key for the Bedrock request |
+| `BEDROCK_MODEL_ID` | Bedrock model or inference profile ID |
 
-`.env.local` is ignored by Git.
+`.env.local` is ignored by Git. Restart the development server after changing it.
 
-## Current mock API behavior
+## Current API behavior
 
 `POST /api/analyze` accepts JSON with `type` and `content`.
 
 - `content` is required and must be a non-empty string.
 - Invalid input returns a clear `400` response.
-- The route waits about one second to simulate analysis.
-- It then returns a prepared bank gift-card scam result from `lib/demo-results.ts`.
-- Amazon Bedrock is not called on this branch. A comment in `app/api/analyze/route.ts` marks where that request will go.
+- If AWS environment variables are set, a Strands agent calls Amazon Bedrock and validates the result with `claraAnalysisSchema`.
+- If those variables are missing, the route waits about one second and returns the prepared gift-card demo from `lib/demo-results.ts`.
+- A Bedrock failure returns `502` and does not silently swap in the demo result.
 
 Shared contracts:
 
 - `types/analysis.ts` — `ClaraRisk` and `ClaraAnalysis`
-- `lib/analysis-schema.ts` — matching Zod schema for future Bedrock output
+- `lib/analysis-schema.ts` — matching Zod schema for Bedrock structured output
+- `lib/clara-agent.ts` — Strands + Bedrock agent
 
-## Planned Bedrock integration
+## Planned Bedrock work
 
-The next backend step is to send the submitted message to Amazon Bedrock and validate the model response with `claraAnalysisSchema` before returning it. The AWS SDK dependency is already installed so that work can start without changing the project structure.
+Screenshot analysis still sends a filename description, not image bytes. Multimodal input can be added later. AgentCore hosting is optional and not required for local demo.
 
 ## Privacy and safety principles
 

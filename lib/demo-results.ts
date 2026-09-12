@@ -1,5 +1,8 @@
 import type { ClaraAnalysis } from "@/types/analysis";
 
+export const CLARA_DISCLAIMER =
+  "Clara provides a second opinion. It does not guarantee that a message is safe, make financial decisions, or replace a bank, law enforcement, or a trusted person.";
+
 export const demoGiftCardScamResult: ClaraAnalysis = {
   risk: "likely_scam",
   headline: "Do not reply or pay.",
@@ -14,6 +17,5 @@ export const demoGiftCardScamResult: ClaraAnalysis = {
     "Call the bank using the phone number on the back of your card. Do not use any number or link from the message.",
   trustedPersonSummary:
     "Clara found warning signs in this message, and I would like a second opinion before I reply, click, or send money.",
-  disclaimer:
-    "Clara provides a second opinion. It does not guarantee that a message is safe, make financial decisions, or replace a bank, law enforcement, or a trusted person.",
+  disclaimer: CLARA_DISCLAIMER,
 };
