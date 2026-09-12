@@ -1,10 +1,21 @@
 # Ask Clara
 
-Ask Clara is an accessible AI safety companion that helps older adults understand suspicious messages before they click a link, reply, or send money.
+A calm, accessible AI safety companion for older adults.
 
-A person pastes a message (or describes what happened). Clara returns a plain-language second opinion: a risk level, warning signs, a safer next step, and a short note they can share with someone they trust.
+Ask Clara helps people understand suspicious messages before they click a link, reply, share personal information, or send money.
 
-Clara provides a second opinion. It does not guarantee that a message is safe, make financial decisions, or replace a bank, law enforcement, or a trusted person.
+Instead of using technical language or creating fear, Clara provides a clear second opinion:
+
+A simple risk level
+Up to three warning signs
+One safest next step
+A short summary to share with someone they trust 
+
+<img width="1533" height="1305" alt="Screenshot 2026-09-12 at 11 16 58 AM" src="https://github.com/user-attachments/assets/ae4dabfd-50cf-425f-ad01-68d831174fd9" />
+<img width="2250" height="1422" alt="Screenshot 2026-09-12 at 17 57 39 (1)" src="https://github.com/user-attachments/assets/9811530f-2ebb-4605-a246-f2312d9b6643" />
+<img width="2212" height="1638" alt="Screenshot 2026-09-12 at 17 52 13" src="https://github.com/user-attachments/assets/3ba2306e-1fab-4dd2-b44d-b8a1f0ad5427" />
+<img width="2168" height="1632" alt="Screenshot 2026-09-12 at 17 52 36" src="https://github.com/user-attachments/assets/aa91f305-f089-40a2-b52b-30d8eb77d53c" />
+
 
 ## Current status
 
