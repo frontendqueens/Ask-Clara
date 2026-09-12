@@ -2,36 +2,62 @@
 
 Ask Clara is an accessible AI safety companion that helps older adults understand suspicious messages before they click a link, reply, or send money.
 
+A person pastes a message (or describes what happened). Clara returns a plain-language second opinion: a risk level, warning signs, a safer next step, and a short note they can share with someone they trust.
+
 Clara provides a second opinion. It does not guarantee that a message is safe, make financial decisions, or replace a bank, law enforcement, or a trusted person.
+
+## Current status
+
+- Next.js app with the Clara check flow and midnight/paper UI
+- Shared `ClaraAnalysis` type and Zod schema
+- Temporary mock result when AWS is not configured
+- Live analysis through [Strands Agents](https://strandsagents.com/docs/user-guide/quickstart/typescript/) and Amazon Bedrock when `.env.local` is set
+- Screenshot upload still sends a filename description, not image bytes
 
 ## Technology stack
 
-- [Next.js](https://nextjs.org/) 16 (App Router)
-- TypeScript
-- Tailwind CSS
-- ESLint
-- [Zod](https://zod.dev/) for shared analysis validation
-- [Lucide React](https://lucide.dev/) for a few simple icons
-- AWS SDK client for Bedrock Runtime (installed, not wired yet)
+- [Next.js](https://nextjs.org/) 16 (App Router, TypeScript, Tailwind CSS, ESLint)
+- [Zod](https://zod.dev/) for request and analysis validation
+- [Lucide React](https://lucide.dev/) for icons
+- [@strands-agents/sdk](https://www.npmjs.com/package/@strands-agents/sdk) for the Clara agent
+- Amazon Bedrock as the model provider (Claude via an inference profile)
+
+## Project structure
+
+```text
+app/
+  api/analyze/route.ts      POST /api/analyze
+  globals.css
+  layout.tsx
+  page.tsx
+components/clara/           Check flow and result UI
+lib/
+  analysis-schema.ts        Zod schemas
+  clara-agent.ts            Strands + Bedrock agent
+  demo-results.ts           Mock gift-card result and disclaimer
+types/analysis.ts           ClaraRisk and ClaraAnalysis
+.env.example                Empty AWS placeholders
+```
 
 ## Local setup
 
 1. Install [Node.js](https://nodejs.org/) 20 or later.
-2. Clone this repository and move into the project folder.
-3. Create a feature branch. Do not work directly on `main`.
-4. Install dependencies:
+2. Clone the repository and create a feature branch. Do not work directly on `main`.
+3. Install dependencies:
 
 ```bash
 npm install
 ```
 
-5. Copy the environment template. Leave the values empty unless you are connecting to AWS later:
+4. Copy the environment template:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Never put real AWS credentials in source code, `.env.example`, this README, or a commit.
+5. Leave `.env.local` empty to use the mock API, or fill it in to call Bedrock (see below).
+
+Never put real AWS credentials in source code, `.env.example`, this README, or a commit. `.env.local` is ignored by Git.
 
 ## Run the development server
 
@@ -39,9 +65,11 @@ Never put real AWS credentials in source code, `.env.example`, this README, or a
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Enter or edit a suspicious message, then choose **Check it with Clara**.
+If port 3000 is already in use, Next.js will pick the next free port (often 3001). Open the URL shown in the terminal.
 
-Other useful commands:
+Enter or edit a suspicious message, then choose **Check it with Clara**. You can start over or open **Ask a trusted person**.
+
+Other commands:
 
 ```bash
 npm run lint
@@ -49,45 +77,77 @@ npm run build
 npm start
 ```
 
+Restart the development server after you change `.env.local`.
+
+## Amazon Bedrock setup
+
+Do this in the AWS account the team uses for the hackathon.
+
+1. Sign in to the [AWS Management Console](https://console.aws.amazon.com/) and pick one region, such as `us-east-1`.
+2. Open [Amazon Bedrock](https://console.aws.amazon.com/bedrock/).
+3. In **Playground** → **Chat / Text**, select a Claude model and send `Hello`. Complete the Anthropic use-case form if AWS asks for it.
+4. In [IAM](https://console.aws.amazon.com/iam/), create a user for the app (console login is optional). Attach `AmazonBedrockFullAccess`, then create an access key for **Application running outside AWS**.
+5. Copy the **inference profile ID** from the Bedrock model card, not only the foundation model ID.
+
+Newer Claude models (including Haiku 4.5) cannot be invoked with the bare model ID. If you see:
+
+> Invocation of model ID … with on-demand throughput isn’t supported
+
+change `BEDROCK_MODEL_ID` to the geo inference profile. Example for a US region:
+
+```text
+us.anthropic.claude-haiku-4-5-20251001-v1:0
+```
+
+Use `eu.…` if your region is in Europe. See the [Claude Haiku 4.5 model card](https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html).
+
 ## Environment variables
 
-These placeholders live in `.env.example`. They are not used by the current mock API.
+Set these in `.env.local`:
 
 | Variable | Purpose |
 | --- | --- |
-| `AWS_REGION` | AWS region for the future Bedrock request |
-| `AWS_ACCESS_KEY_ID` | Access key for the future Bedrock request |
-| `AWS_SECRET_ACCESS_KEY` | Secret key for the Bedrock request |
-| `BEDROCK_MODEL_ID` | Bedrock model or inference profile ID |
+| `AWS_REGION` | Region used by the Bedrock client, for example `us-east-1` |
+| `AWS_ACCESS_KEY_ID` | IAM access key for the hackathon user |
+| `AWS_SECRET_ACCESS_KEY` | Matching secret access key |
+| `BEDROCK_MODEL_ID` | Inference profile ID, for example `us.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
-`.env.local` is ignored by Git. Restart the development server after changing it.
+All four must be non-empty for Clara to call Bedrock. If any are missing, the API uses the mock result.
 
-## Current API behavior
+## How analysis works
 
-`POST /api/analyze` accepts JSON with `type` and `content`.
+1. The UI posts `{ type, content }` to `POST /api/analyze`.
+2. The route validates `content` with Zod. Invalid input returns `400`.
+3. If AWS is configured, `lib/clara-agent.ts` creates a Strands `Agent` with `BedrockModel` and `claraAnalysisSchema`.
+4. The model must return `ClaraAnalysis`: `risk`, `headline`, `summary`, `warningSigns` (1–3 items), `safestNextStep`, `trustedPersonSummary`, and `disclaimer`.
+5. Allowed `risk` values: `low_concern`, `caution`, `likely_scam`, `unclear`.
+6. The product disclaimer is always applied, even if the model changes the wording.
+7. If Bedrock fails, the API returns `502` with a short error. It does not silently return the gift-card mock.
 
-- `content` is required and must be a non-empty string.
-- Invalid input returns a clear `400` response.
-- If AWS environment variables are set, a Strands agent calls Amazon Bedrock and validates the result with `claraAnalysisSchema`.
-- If those variables are missing, the route waits about one second and returns the prepared gift-card demo from `lib/demo-results.ts`.
-- A Bedrock failure returns `502` and does not silently swap in the demo result.
+Without AWS credentials, the route waits about one second and returns `lib/demo-results.ts`.
 
-Shared contracts:
+## How to tell Bedrock is working
 
-- `types/analysis.ts` — `ClaraRisk` and `ClaraAnalysis`
-- `lib/analysis-schema.ts` — matching Zod schema for Bedrock structured output
-- `lib/clara-agent.ts` — Strands + Bedrock agent
+Check two different messages:
 
-## Planned Bedrock work
+- A gift-card or “your account is locked” scam should come back as high concern.
+- A normal family text, such as “Hi Grandma, I will visit on Sunday,” should come back as `low_concern` or `caution`, not the same gift-card wording.
 
-Screenshot analysis still sends a filename description, not image bytes. Multimodal input can be added later. AgentCore hosting is optional and not required for local demo.
+If both answers are identical gift-card copy, you are on the mock path.
 
 ## Privacy and safety principles
 
 - Clara is a second-opinion tool, not a decision-maker.
 - Users should pause before they click a link, reply, or send money.
-- Clara should not store messages longer than needed to produce a result.
-- Do not place real credentials, personal financial details, or production secrets in the repository.
+- Do not tell people to use a number or link from the suspicious message.
+- Do not store messages longer than needed to produce a result.
+- Do not commit credentials, personal financial details, or production secrets.
 - When something looks risky, the safest next step is to contact a bank, law enforcement, or a trusted person through a number the user already has.
 
 Clara provides a second opinion. It does not guarantee that a message is safe, make financial decisions, or replace a bank, law enforcement, or a trusted person.
+
+## Later work
+
+- Screenshot analysis with real image bytes (multimodal Bedrock input)
+- Prompt tuning after more demo examples
+- Optional Amazon Bedrock AgentCore hosting (not required for the local demo)
