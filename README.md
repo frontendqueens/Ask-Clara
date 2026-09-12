@@ -114,7 +114,7 @@ Use `eu.…` if your region is in Europe. See the [Claude Haiku 4.5 model card](
 
 ## Environment variables
 
-Set these in `.env.local`:
+Set these in `.env.local` for local development:
 
 | Variable | Purpose |
 | --- | --- |
@@ -123,7 +123,18 @@ Set these in `.env.local`:
 | `AWS_SECRET_ACCESS_KEY` | Matching secret access key |
 | `BEDROCK_MODEL_ID` | Inference profile ID, for example `us.anthropic.claude-haiku-4-5-20251001-v1:0` |
 
-All four must be non-empty for Clara to call Bedrock. If any are missing, the API uses the mock result.
+Amplify Hosting does not allow environment variable names that start with `AWS_`. In the Amplify console, use:
+
+| Amplify variable | Same value as |
+| --- | --- |
+| `CLARA_AWS_REGION` | `AWS_REGION` |
+| `CLARA_AWS_ACCESS_KEY_ID` | `AWS_ACCESS_KEY_ID` |
+| `CLARA_AWS_SECRET_ACCESS_KEY` | `AWS_SECRET_ACCESS_KEY` |
+| `BEDROCK_MODEL_ID` | `BEDROCK_MODEL_ID` |
+
+The app accepts either set of names. `amplify.yml` writes the Amplify names into `.env.production` at build time so the SSR route can read them.
+
+All four values must be non-empty for Clara to call Bedrock. If any are missing, the API uses the mock result.
 
 ## How analysis works
 

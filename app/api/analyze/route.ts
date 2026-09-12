@@ -46,7 +46,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Clara could not reach Amazon Bedrock. Check AWS_REGION, BEDROCK_MODEL_ID, and your access keys, then restart the dev server.",
+          "Clara could not reach Amazon Bedrock. Check the region, BEDROCK_MODEL_ID, and access keys. On Amplify use CLARA_AWS_REGION, CLARA_AWS_ACCESS_KEY_ID, and CLARA_AWS_SECRET_ACCESS_KEY.",
         detail: message,
       },
       { status: 502 },
