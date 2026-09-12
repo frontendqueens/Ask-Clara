@@ -47,7 +47,7 @@ lib/
   clara-agent.ts            Strands + Bedrock agent
   demo-results.ts           Mock gift-card result and disclaimer
 types/analysis.ts           ClaraRisk and ClaraAnalysis
-.env.example                Empty AWS placeholders
+.env.example                AWS_ and CLARA_AWS_ placeholders
 ```
 
 ## Local setup
@@ -138,6 +138,19 @@ All four values must be non-empty for Clara to call Bedrock. If any are missing,
 
 ## How analysis works
 
+```mermaid
+flowchart TD
+    A["Browser: ClaraChecker"] -->|"POST /api/analyze"| B["route.ts"]
+    B -->|"invalid body"| E4["400 content required"]
+    B --> C{"Bedrock configured?"}
+    C -->|"no"| M["Mock result + 1s delay"]
+    C -->|"yes"| S["Strands Agent + BedrockModel"]
+    S --> R["Amazon Bedrock"]
+    R -->|"valid ClaraAnalysis"| OK["200 ClaraAnalysis"]
+    R -->|"throws"| E5["502 error and detail"]
+    M --> OK
+```
+
 1. The UI posts `{ type, content }` to `POST /api/analyze`.
 2. The route validates `content` with Zod. Invalid input returns `400`.
 3. If AWS is configured, `lib/clara-agent.ts` creates a Strands `Agent` with `BedrockModel` and `claraAnalysisSchema`.
@@ -145,6 +158,11 @@ All four values must be non-empty for Clara to call Bedrock. If any are missing,
 5. Allowed `risk` values: `low_concern`, `caution`, `likely_scam`, `unclear`.
 6. The product disclaimer is always applied, even if the model changes the wording.
 7. If Bedrock fails, the API returns `502` with a short error. It does not silently return the gift-card mock.
+
+`lib/analysis-schema.ts` is the only definition of the analysis shape, and it runs four
+times per request: on the incoming body, on the agent's structured output, on the route's
+response, and again in the browser before the result renders. A malformed model response
+cannot reach the person asking for help.
 
 Without AWS credentials, the route waits about one second and returns `lib/demo-results.ts`.
 
